@@ -6,25 +6,24 @@ const db = require("./database");
 
 const app = express();
 
-// Middleware to read JSON request body
 app.use(express.json());
 
 // JWT secret key
 const JWT_SECRET = "my_lab4_secret_key";
 
-// Registration API
+
 app.post("/register/", async (req, res) => {
     try {
         const { username, name, password } = req.body;
 
-        // Check required fields
+   
         if (!username || !name || !password) {
             return res.status(400).json({
                 message: "All fields are required"
             });
         }
 
-        // Check whether username already exists
+  
         const existingUser = db.prepare(
             "SELECT * FROM users WHERE username = ?"
         ).get(username);
@@ -35,10 +34,10 @@ app.post("/register/", async (req, res) => {
             });
         }
 
-        // Hash password using bcrypt
+    
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Save user in database
+    
         db.prepare(
             "INSERT INTO users (username, name, password) VALUES (?, ?, ?)"
         ).run(username, name, hashedPassword);
@@ -55,24 +54,23 @@ app.post("/register/", async (req, res) => {
     }
 });
 
-// Login API
+
 app.post("/login/", async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Find user by username
         const user = db.prepare(
             "SELECT * FROM users WHERE username = ?"
         ).get(username);
 
-        // Check whether user exists
+     
         if (!user) {
             return res.status(400).json({
                 message: "User not found"
             });
         }
 
-        // Compare entered password with hashed password
+        
         const isPasswordValid = await bcrypt.compare(
             password,
             user.password
@@ -84,7 +82,7 @@ app.post("/login/", async (req, res) => {
             });
         }
 
-        // Generate JWT token with username only
+        
         const token = jwt.sign(
             { username: user.username },
             JWT_SECRET
@@ -102,7 +100,7 @@ app.post("/login/", async (req, res) => {
     }
 });
 
-// Start server
+
 const PORT = 3000;
 
 app.listen(PORT, () => {
